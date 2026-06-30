@@ -92,6 +92,17 @@ input, select {
         font-size: 14px;
     }
 
+        /* 불러오기 버튼 스타일 디자인 맞춤 */
+        .file-input-wrapper label.import-btn {
+            background-color: #10b981;
+            color: white;
+            border-color: #059669;
+        }
+
+            .file-input-wrapper label.import-btn:hover {
+                background-color: #059669;
+            }
+
     .file-input-wrapper input[type="file"] {
         position: absolute;
         left: 0;
@@ -196,6 +207,7 @@ button {
 .char-card-buttons {
     display: flex;
     margin-top: 6px;
+    gap: 6px; /* 버튼 분할 간격 추가 */
 }
 
 .card-setup-btn {
@@ -214,6 +226,25 @@ button {
 
     .card-setup-btn:hover {
         background-color: #2563eb;
+    }
+
+/* 내보내기 버튼 전용 스타일 */
+.card-export-btn {
+    background-color: #6b7280;
+    color: white;
+    padding: 5px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    width: auto;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+    .card-export-btn:hover {
+        background-color: #4b5563;
     }
 
 /* 우상단 삭제 X 버튼 */
