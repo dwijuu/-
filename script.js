@@ -44,7 +44,6 @@ function addCharacter() {
         avatarUrl: avatarUrl,
         photos: [],
 
-        // 상세 확장 도감 데이터 초기 스키마 정의
         profile: {
             age: "", height: "",
             specRace: race, specElement: (magic1 + " · " + magic2),
@@ -66,7 +65,6 @@ function deleteCharacter(id) {
     renderAll();
 }
 
-// 글자수에 맞춰 인풋 상자 크기 실시간 조절 스크립트
 function adjustTextAreaHeight(element) {
     element.style.height = "auto";
     element.style.height = element.scrollHeight + "px";
@@ -80,7 +78,6 @@ function openCharProfile(id) {
     let char = characters.find(c => c.id === id);
     if (!char) return;
 
-    // 왼쪽 네모 형태 아바타 상자 로드
     let avatarDiv = document.getElementById("profile-fixed-avatar");
     if (char.avatarUrl) {
         avatarDiv.innerHTML = `<img src="${char.avatarUrl}">`;
@@ -88,7 +85,6 @@ function openCharProfile(id) {
         avatarDiv.innerHTML = "👤";
     }
 
-    // 오른쪽 스크롤판 내부 필드 일괄 매핑 로드
     document.getElementById("prof-name").value = char.name;
     document.getElementById("prof-gender").value = char.gender;
 
@@ -110,12 +106,9 @@ function openCharProfile(id) {
 
     document.getElementById("char-profile-modal").style.display = "flex";
 
-    // 데이터 주입 직후 모든 인풋들의 높이를 초기화하여 텍스트에 맞게 가변 조절
     setTimeout(() => {
         let textareas = document.querySelectorAll(".dynamic-field-block textarea");
         textareas.forEach(ta => adjustTextAreaHeight(ta));
-
-        // 스크롤바를 맨 상단으로 초기화
         document.querySelector(".profile-main-right-scroll").scrollTop = 0;
     }, 50);
 }
@@ -125,7 +118,7 @@ function closeCharProfileModal() {
     currentProfileCharId = null;
 }
 
-// 입력 필드 세이브 연산 로직
+// 설정 필드 저장
 function saveCharProfile() {
     if (!currentProfileCharId) return;
     let char = characters.find(c => c.id === currentProfileCharId);
@@ -154,7 +147,7 @@ function saveCharProfile() {
     renderAll();
 }
 
-// 그룹 관리 모듈계
+// 그룹 만들기
 function openGroupCreationModal() {
     let listDiv = document.getElementById("group-clickable-list");
     listDiv.innerHTML = "";
@@ -200,11 +193,13 @@ function deleteGroup(id) {
     if (confirm("이 그룹 갤러리를 삭제하시겠습니까?")) { groups = groups.filter(g => g.id !== id); renderAll(); }
 }
 
-// 렌더링 총지휘부
+// 렌더링 컨트롤 허브
 function renderAll() {
     renderMainTab();
     renderCombinedGalleryList();
     renderRecentPhotos();
+
+    saveToLocalStorage(); // ✨ 화면이 갱신될 때마다 브라우저 금고에 실시간 저장!
 }
 
 function renderMainTab() {
@@ -218,7 +213,6 @@ function renderMainTab() {
         let magicText = (char.magic1 === "없음" && char.magic2 === "없음") ? "없음" : `${char.magic1} · ${char.magic2}`;
         let avatarHTML = char.avatarUrl ? `<div class="char-avatar"><img src="${char.avatarUrl}"></div>` : `<div class="char-avatar">👤</div>`;
 
-        // [★ 변경] 설정 정의 -> '설정' 문구 변경 및 축소 컴포넌트 탑재
         let cardHTML = `
             <div class="char-card">
                 ${avatarHTML}
@@ -506,3 +500,33 @@ function zoomPhoto(url, title) {
     zoomModal.style.display = "flex";
 }
 function closeZoomPhoto() { document.getElementById("zoom-modal").style.display = "none"; }
+
+
+// ----------------------------------------------------
+// 💾 [자동 저장 및 데이터 로드 시스템 모듈]
+// ----------------------------------------------------
+
+// 1. 데이터 브라우저 임시보관함에 저장하기
+function saveToLocalStorage() {
+    localStorage.setItem("wonnol_characters", JSON.stringify(characters));
+    localStorage.setItem("wonnol_groups", JSON.stringify(groups));
+}
+
+// 2. 브라우저 창고에서 기존 데이터 소환하기
+function loadFromLocalStorage() {
+    let savedChars = localStorage.getItem("wonnol_characters");
+    let savedGroups = localStorage.getItem("wonnol_groups");
+
+    if (savedChars) {
+        characters = JSON.parse(savedChars);
+    }
+    if (savedGroups) {
+        groups = JSON.parse(savedGroups);
+    }
+}
+
+// 3. 앱이 켜지자마자 저장 파일 강제 로드 후 화면 구성
+window.addEventListener('DOMContentLoaded', () => {
+    loadFromLocalStorage();
+    renderAll();
+});

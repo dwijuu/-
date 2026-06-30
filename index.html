@@ -95,7 +95,6 @@
 
     <!-- 두 번째 탭: 그림 정리 -->
     <div id="tab-gallery" class="tab-content">
-        <!-- 1. 최근 사진 구역 -->
         <div class="recent-section">
             <h2>최근 추가된 그림 (최대 3개)</h2>
             <div id="recent-photos-container" class="recent-grid">
@@ -103,13 +102,11 @@
             </div>
         </div>
 
-        <!-- 2. 전체 그림 모아보기 전용 컨트롤 바 -->
         <div class="all-photos-control-bar">
             <button class="view-all-photos-btn" onclick="openAllPhotosModal()">🖼️ 여태 올린 모든 그림 모아보기</button>
             <button class="create-group-btn" onclick="openGroupCreationModal()">+ 그룹 갤러리 생성</button>
         </div>
 
-        <!-- 3. 통합형 갤러리 목록 -->
         <div class="gallery-list-section">
             <h2>📂 갤러리 목록 (캐릭터 및 그룹)</h2>
             <div id="combined-gallery-list" class="gallery-card-container"></div>
@@ -196,20 +193,20 @@
         </div>
     </div>
 
-    <!-- [교정 완료 팝업 6] 가로형 직사각형 캐릭터 설정 오버레이 팝업창 -->
+    <!-- [팝업 6] 가로형 직사각형 캐릭터 설정 오버레이 팝업창 -->
     <div id="char-profile-modal" class="modal-overlay">
         <div class="modal-content profile-landscape-layout">
             <button class="modal-close-x" onclick="closeCharProfileModal()">×</button>
             <h2>🛠️ 캐릭터 설정</h2>
 
             <div class="profile-container-flex">
-                <!-- 고정형 왼쪽 영역: 네모 아이콘 이미지 뷰 및 저장 기능 -->
+                <!-- 고정형 왼쪽 영역 -->
                 <div class="profile-sidebar-left">
                     <div id="profile-fixed-avatar" class="profile-square-avatar">👤</div>
                     <button class="profile-save-action-btn" onclick="saveCharProfile()">💾 설정 저장</button>
                 </div>
 
-                <!-- 스크롤형 오른쪽 영역: 모든 작성 내용이 모여 아래로 스크롤되는 메인 판넬 -->
+                <!-- 스크롤형 오른쪽 영역 -->
                 <div class="profile-main-right-scroll">
                     <div class="dynamic-field-block"><label>이름 -</label><textarea id="prof-name" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
                     <div class="dynamic-field-block"><label>나이 -</label><textarea id="prof-age" rows="1" placeholder="예: 18세" oninput="adjustTextAreaHeight(this)"></textarea></div>
