@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>원놀</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 상단 메뉴바 -->
+    <header>
+        <h1>🏢 원놀</h1>
+        <nav>
+            <button class="tab-btn active" onclick="openTab(event, 'tab-characters')">명단 관리</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-gallery')">그림 정리</button>
+        </nav>
+        <div class="header-spacer"></div>
+    </header>
+
+    <!-- 첫 번째 탭: 명단 관리 -->
+    <div id="tab-characters" class="tab-content" style="display: block;">
+        <div class="control-panel">
+            <input type="text" id="name" placeholder="이름 (예: 김씨)">
+
+            <select id="gender">
+                <option value="남성">남성</option>
+                <option value="여성">여성</option>
+            </select>
+
+            <select id="mbti">
+                <option value="ENFJ">ENFJ</option>
+                <option value="ENFP">ENFP</option>
+                <option value="ENTJ">ENTJ</option>
+                <option value="ENTP">ENTP</option>
+                <option value="ESFJ">ESFJ</option>
+                <option value="ESFP">ESFP</option>
+                <option value="ESTJ">ESTJ</option>
+                <option value="ESTP">ESTP</option>
+                <option value="INFJ">INFJ</option>
+                <option value="INFP">INFP</option>
+                <option value="INTJ">INTJ</option>
+                <option value="INTP">INTP</option>
+                <option value="ISFJ">ISFJ</option>
+                <option value="ISFP">ISFP</option>
+                <option value="ISTJ">ISTJ</option>
+                <option value="ISTP">ISTP</option>
+            </select>
+
+            <select id="race">
+                <option value="인간">인간</option>
+                <option value="화이트">화이트</option>
+                <option value="블랙">블랙</option>
+            </select>
+
+            <select id="magic1">
+                <option value="없음">주 원소: 없음</option>
+                <option value="불">주 원소: 불</option>
+                <option value="물">주 원소: 물</option>
+                <option value="바람">주 원소: 바람</option>
+                <option value="자연">주 원소: 자연</option>
+                <option value="번개">주 원소: 번개</option>
+                <option value="대지">주 원소: 대지</option>
+            </select>
+
+            <select id="magic2">
+                <option value="없음">부 원소: 없음</option>
+                <option value="불">부 원소: 불</option>
+                <option value="물">부 원소: 물</option>
+                <option value="바람">부 원소: 바람</option>
+                <option value="자연">부 원소: 자연</option>
+                <option value="번개">부 원소: 번개</option>
+                <option value="대지">부 원소: 대지</option>
+            </select>
+
+            <div class="file-input-wrapper">
+                <label for="avatar">📸 아이콘 이미지 선택</label>
+                <input type="file" id="avatar" accept="image/*">
+            </div>
+
+            <button type="button" onclick="addCharacter()" class="add-btn">+ 추가</button>
+        </div>
+
+        <div class="race-section">
+            <h2>인간</h2>
+            <div id="list-human" class="list-container"></div>
+        </div>
+        <div class="race-section">
+            <h2>화이트</h2>
+            <div id="list-white" class="list-container"></div>
+        </div>
+        <div class="race-section">
+            <h2>블랙</h2>
+            <div id="list-black" class="list-container"></div>
+        </div>
+    </div>
+
+    <!-- 두 번째 탭: 그림 정리 -->
+    <div id="tab-gallery" class="tab-content">
+        <!-- 1. 최근 사진 구역 -->
+        <div class="recent-section">
+            <h2>최근 추가된 그림 (최대 3개)</h2>
+            <div id="recent-photos-container" class="recent-grid">
+                <p class="empty-text">아직 추가된 그림이 없습니다.</p>
+            </div>
+        </div>
+
+        <!-- 2. 전체 그림 모아보기 전용 컨트롤 바 -->
+        <div class="all-photos-control-bar">
+            <button class="view-all-photos-btn" onclick="openAllPhotosModal()">🖼️ 여태 올린 모든 그림 모아보기</button>
+            <button class="create-group-btn" onclick="openGroupCreationModal()">+ 그룹 갤러리 생성</button>
+        </div>
+
+        <!-- 3. 통합형 갤러리 목록 -->
+        <div class="gallery-list-section">
+            <h2>📂 갤러리 목록 (캐릭터 및 그룹)</h2>
+            <div id="combined-gallery-list" class="gallery-card-container"></div>
+        </div>
+    </div>
+
+    <!-- [팝업 1] 메인 개인/그룹 갤러리 상세 창 -->
+    <div id="gallery-modal" class="modal-overlay">
+        <div class="modal-content large-gallery-content">
+            <button class="modal-close-x" onclick="closeGallery()">×</button>
+            <h2 id="modal-char-name">캐릭터 갤러리</h2>
+
+            <div class="photo-upload-panel">
+                <div class="upload-inputs">
+                    <input type="text" id="photo-title" placeholder="그림 이름/제목 입력">
+                    <input type="text" id="photo-tags" placeholder="태그 입력 (예: #낙서 #전신 #SD)">
+                    <div class="file-input-wrapper">
+                        <label for="photo-file">🖼️ 그림 파일 선택</label>
+                        <input type="file" id="photo-file" accept="image/*" onchange="previewGalleryImage(this)">
+                    </div>
+                    <button type="button" onclick="addPhotoToGallery()" class="gallery-add-btn">그림 등록</button>
+                </div>
+
+                <div id="file-preview-zone" class="preview-zone" style="display: none;">
+                    <span class="preview-tag">등록 전 예시</span>
+                    <img id="file-preview-img" src="" alt="미리보기">
+                </div>
+            </div>
+
+            <div id="popup-photo-grid" class="popup-photo-grid"></div>
+        </div>
+    </div>
+
+    <!-- [팝업 2] 여태 올린 모든 그림 모아보기 팝업 창 -->
+    <div id="all-photos-modal" class="modal-overlay">
+        <div class="modal-content large-gallery-content">
+            <button class="modal-close-x" onclick="closeAllPhotosModal()">×</button>
+            <h2>🖼️ 전체 그림 모아보기 (통합 타임라인)</h2>
+
+            <div class="tag-filter-container">
+                <span class="tag-filter-label">🏷️ 태그 필터:</span>
+                <div id="all-photos-tag-bar" class="tag-buttons-list"></div>
+            </div>
+
+            <div id="all-photos-popup-grid" class="popup-photo-grid"></div>
+        </div>
+    </div>
+
+    <!-- [팝업 3] 그룹 생성 팝업창 -->
+    <div id="group-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-x" onclick="closeGroupCreationModal()">×</button>
+            <h2>👥 새 그룹 갤러리 만들기</h2>
+            <p class="info-text">이 그룹 갤러리에 함께 포함할 캐릭터들을 선택해주세요. (클릭 시 하이라이트)</p>
+            <div id="group-clickable-list" class="clickable-selector-grid"></div>
+            <button class="submit-group-btn" onclick="submitCreateGroup()">선택한 캐릭터들로 갤러리 개설하기</button>
+        </div>
+    </div>
+
+    <!-- [팝업 4] 원본 이미지 확대 뷰어 -->
+    <div id="zoom-modal" class="modal-overlay zoom-overlay" onclick="closeZoomPhoto()">
+        <button class="modal-close-x" style="color: white;">×</button>
+        <div class="zoom-wrapper">
+            <img id="zoom-target-img" src="" alt="원본 확대보기">
+            <p id="zoom-target-title" class="zoom-title"></p>
+            <span class="zoom-close-tip">화면 아무 곳이나 클릭하면 닫힙니다.</span>
+        </div>
+    </div>
+
+    <!-- [팝업 5] 그림 속성 및 태그 사후 수정 창 -->
+    <div id="photo-edit-modal" class="modal-overlay">
+        <div class="modal-content small-content">
+            <button class="modal-close-x" onclick="closePhotoEditModal()">×</button>
+            <h2>📝 그림 정보 변경</h2>
+            <div class="edit-field-group">
+                <label>그림 이름</label>
+                <input type="text" id="edit-photo-title">
+            </div>
+            <div class="edit-field-group">
+                <label>태그 수정 (띄어쓰기로 구분)</label>
+                <input type="text" id="edit-photo-tags" placeholder="예: #낙서 #축전">
+            </div>
+            <button class="submit-group-btn" onclick="submitEditPhoto()">수정 완료</button>
+        </div>
+    </div>
+
+    <!-- [교정 완료 팝업 6] 가로형 직사각형 캐릭터 설정 오버레이 팝업창 -->
+    <div id="char-profile-modal" class="modal-overlay">
+        <div class="modal-content profile-landscape-layout">
+            <button class="modal-close-x" onclick="closeCharProfileModal()">×</button>
+            <h2>🛠️ 캐릭터 설정</h2>
+
+            <div class="profile-container-flex">
+                <!-- 고정형 왼쪽 영역: 네모 아이콘 이미지 뷰 및 저장 기능 -->
+                <div class="profile-sidebar-left">
+                    <div id="profile-fixed-avatar" class="profile-square-avatar">👤</div>
+                    <button class="profile-save-action-btn" onclick="saveCharProfile()">💾 설정 저장</button>
+                </div>
+
+                <!-- 스크롤형 오른쪽 영역: 모든 작성 내용이 모여 아래로 스크롤되는 메인 판넬 -->
+                <div class="profile-main-right-scroll">
+                    <div class="dynamic-field-block"><label>이름 -</label><textarea id="prof-name" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                    <div class="dynamic-field-block"><label>나이 -</label><textarea id="prof-age" rows="1" placeholder="예: 18세" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                    <div class="dynamic-field-block"><label>성별 -</label><textarea id="prof-gender" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                    <div class="dynamic-field-block"><label>키 -</label><textarea id="prof-height" rows="1" placeholder="예: 172cm" oninput="adjustTextAreaHeight(this)"></textarea></div>
+
+                    <div class="profile-space-divider"></div>
+
+                    <div class="dynamic-field-block"><label>종족 -</label><textarea id="prof-race" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                    <div class="dynamic-field-block"><label>원소 -</label><textarea id="prof-element" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                    <div class="dynamic-field-block"><label>외형 -</label><textarea id="prof-appearance" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                    <div class="dynamic-field-block"><label>의상 -</label><textarea id="prof-clothing" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                    <div class="dynamic-field-block"><label>지팡이 -</label><textarea id="prof-wand" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                    <div class="dynamic-field-block"><label>스킬 -</label><textarea id="prof-skills" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+
+                    <div class="profile-space-divider"></div>
+
+                    <div class="dynamic-field-block"><label>성격 -</label><textarea id="prof-personality" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                    <div class="dynamic-field-block"><label>좋아하는것 / 싫어하는것 -</label><textarea id="prof-likes-dislikes" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                    <div class="dynamic-field-block"><label>배경 -</label><textarea id="prof-background" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+
+                    <div class="profile-space-divider"></div>
+
+                    <div class="dynamic-field-block"><label>강점 -</label><textarea id="prof-strengths" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                    <div class="dynamic-field-block"><label>약점 -</label><textarea id="prof-weaknesses" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                    <div class="dynamic-field-block"><label>기타 -</label><textarea id="prof-etc" rows="1" oninput="adjustTextAreaHeight(this)"></textarea></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
