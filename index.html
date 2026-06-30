@@ -75,11 +75,9 @@
             </div>
 
             <button type="button" onclick="addCharacter()" class="add-btn">+ 추가</button>
-
-            <div class="file-input-wrapper">
-                <label for="import-file" class="import-btn">📥 불러오기</label>
-                <input type="file" id="import-file" accept=".json" onchange="importCharacter(this)">
-            </div>
+            
+            <input type="file" id="import-char-file" accept=".json" style="display:none;" onchange="importCharacter(event)">
+            <button type="button" onclick="document.getElementById('import-char-file').click()" class="import-btn">📥 불러오기</button>
         </div>
 
         <div class="race-section">

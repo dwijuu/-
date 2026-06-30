@@ -92,17 +92,6 @@ input, select {
         font-size: 14px;
     }
 
-        /* 불러오기 버튼 스타일 디자인 맞춤 */
-        .file-input-wrapper label.import-btn {
-            background-color: #10b981;
-            color: white;
-            border-color: #059669;
-        }
-
-            .file-input-wrapper label.import-btn:hover {
-                background-color: #059669;
-            }
-
     .file-input-wrapper input[type="file"] {
         position: absolute;
         left: 0;
@@ -125,6 +114,17 @@ button {
     color: white;
     padding: 9px 20px;
 }
+
+.import-btn {
+    background-color: #10b981;
+    color: white;
+    padding: 9px 20px;
+    transition: background 0.2s;
+}
+
+    .import-btn:hover {
+        background-color: #059669;
+    }
 
 .race-section {
     margin-top: 30px;
@@ -207,7 +207,7 @@ button {
 .char-card-buttons {
     display: flex;
     margin-top: 6px;
-    gap: 6px; /* 버튼 분할 간격 추가 */
+    gap: 6px;
 }
 
 .card-setup-btn {
@@ -228,9 +228,8 @@ button {
         background-color: #2563eb;
     }
 
-/* 내보내기 버튼 전용 스타일 */
 .card-export-btn {
-    background-color: #6b7280;
+    background-color: #8b5cf6;
     color: white;
     padding: 5px 12px;
     font-size: 12px;
@@ -244,7 +243,7 @@ button {
 }
 
     .card-export-btn:hover {
-        background-color: #4b5563;
+        background-color: #7c3aed;
     }
 
 /* 우상단 삭제 X 버튼 */
