@@ -18,20 +18,30 @@ let currentOpenType = 'char';
 let targetEditPhotoId = null;
 let activeTagFilter = "전체";
 
-// 캐릭터 신규 등록 연산 공정
-function addCharacter() {
+// 📸 이미지를 텍스트 데이터로 변환하는 영구 저장 핵심 함수
+function fileToBase64(file) {
+    return new Promise((resolve) => {
+        if (!file) { resolve(null); return; }
+        let reader = new FileReader();
+        reader.onload = function (e) { resolve(e.target.result); };
+        reader.readAsDataURL(file);
+    });
+}
+
+// 캐릭터 신규 등록 연산 공정 (비동기 처리 적용)
+async function addCharacter() {
     let name = document.getElementById("name").value.trim();
     let gender = document.getElementById("gender").value;
     let mbti = document.getElementById("mbti").value;
     let race = document.getElementById("race").value;
     let magic1 = document.getElementById("magic1").value;
     let magic2 = document.getElementById("magic2").value;
-    let avatarFile = document.getElementById("avatar").value ? document.getElementById("avatar").files[0] : null;
+    let avatarFile = document.getElementById("avatar").files[0];
 
     if (name === "") { alert("이름을 입력해주세요!"); return; }
 
-    let avatarUrl = null;
-    if (avatarFile) { avatarUrl = URL.createObjectURL(avatarFile); }
+    // 사진을 영구적인 텍스트 주소로 변환
+    let avatarUrl = await fileToBase64(avatarFile);
 
     let newChar = {
         id: "char_" + Date.now() + "_" + Math.random(),
@@ -61,8 +71,10 @@ function addCharacter() {
 }
 
 function deleteCharacter(id) {
-    characters = characters.filter(char => char.id !== id);
-    renderAll();
+    if (confirm("이 캐릭터를 삭제하시겠습니까? 관련 그림도 모두 사라집니다.")) {
+        characters = characters.filter(char => char.id !== id);
+        renderAll();
+    }
 }
 
 function adjustTextAreaHeight(element) {
@@ -199,7 +211,7 @@ function renderAll() {
     renderCombinedGalleryList();
     renderRecentPhotos();
 
-    saveToLocalStorage(); // ✨ 화면이 갱신될 때마다 브라우저 금고에 실시간 저장!
+    saveToDB(); // ✨ 화면이 바뀔 때마다 브라우저 거대 저장소(IndexedDB)에 자동 저장!
 }
 
 function renderMainTab() {
@@ -405,7 +417,8 @@ function renderAllPhotosGrid() {
     });
 }
 
-function addPhotoToGallery() {
+// 그림 추가 로직 (비동기 처리 및 데이터 직렬화 적용)
+async function addPhotoToGallery() {
     let title = document.getElementById("photo-title").value.trim();
     let tagInput = document.getElementById("photo-tags").value.trim();
     let fileInput = document.getElementById("photo-file");
@@ -415,7 +428,10 @@ function addPhotoToGallery() {
     if (!file) { alert("그림 파일을 선택해주세요!"); return; }
 
     let parsedTags = tagInput ? tagInput.split(/\s+/).map(t => t.startsWith('#') ? t : '#' + t) : [];
-    let photoUrl = URL.createObjectURL(file);
+
+    // 사진을 영구 보관용 텍스트로 변환
+    let photoUrl = await fileToBase64(file);
+
     let newPhoto = {
         id: "photo_" + Date.now() + "_" + Math.random(),
         title: title, tags: parsedTags, url: photoUrl, time: Date.now(), ownerName: ""
@@ -436,14 +452,16 @@ function addPhotoToGallery() {
 }
 
 function deletePhotoFromGallery(photoId) {
-    if (currentOpenType === 'char') {
-        let targetChar = characters.find(c => c.id === currentOpenId);
-        if (targetChar) targetChar.photos = targetChar.photos.filter(p => p.id !== photoId);
-    } else {
-        let targetGroup = groups.find(g => g.id === currentOpenId);
-        if (targetGroup) targetGroup.photos = targetGroup.photos.filter(p => p.id !== photoId);
+    if (confirm("이 그림을 갤러리에서 삭제하시겠습니까?")) {
+        if (currentOpenType === 'char') {
+            let targetChar = characters.find(c => c.id === currentOpenId);
+            if (targetChar) targetChar.photos = targetChar.photos.filter(p => p.id !== photoId);
+        } else {
+            let targetGroup = groups.find(g => g.id === currentOpenId);
+            if (targetGroup) targetGroup.photos = targetGroup.photos.filter(p => p.id !== photoId);
+        }
+        renderPopupPhotos(); renderRecentPhotos();
     }
-    renderPopupPhotos(); renderRecentPhotos();
 }
 
 function renderRecentPhotos() {
@@ -503,30 +521,63 @@ function closeZoomPhoto() { document.getElementById("zoom-modal").style.display 
 
 
 // ----------------------------------------------------
-// 💾 [자동 저장 및 데이터 로드 시스템 모듈]
+// 💾 [무료 영구 저장: Browser IndexedDB 시스템 모듈]
 // ----------------------------------------------------
+const DB_NAME = "WonnolDatabase";
+const STORE_NAME = "wonnol_store";
 
-// 1. 데이터 브라우저 임시보관함에 저장하기
-function saveToLocalStorage() {
-    localStorage.setItem("wonnol_characters", JSON.stringify(characters));
-    localStorage.setItem("wonnol_groups", JSON.stringify(groups));
+function openDB() {
+    return new Promise((resolve, reject) => {
+        let request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = (e) => {
+            let db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME);
+            }
+        };
+        request.onsuccess = (e) => resolve(e.target.result);
+        request.onerror = (e) => reject(e.target.error);
+    });
 }
 
-// 2. 브라우저 창고에서 기존 데이터 소환하기
-function loadFromLocalStorage() {
-    let savedChars = localStorage.getItem("wonnol_characters");
-    let savedGroups = localStorage.getItem("wonnol_groups");
-
-    if (savedChars) {
-        characters = JSON.parse(savedChars);
-    }
-    if (savedGroups) {
-        groups = JSON.parse(savedGroups);
+async function saveToDB() {
+    try {
+        let db = await openDB();
+        let tx = db.transaction(STORE_NAME, "readwrite");
+        let store = tx.objectStore(STORE_NAME);
+        store.put(characters, "characters");
+        store.put(groups, "groups");
+    } catch (err) {
+        console.error("브라우저 자동 저장 실패:", err);
     }
 }
 
-// 3. 앱이 켜지자마자 저장 파일 강제 로드 후 화면 구성
+async function loadFromDB() {
+    try {
+        let db = await openDB();
+        let tx = db.transaction(STORE_NAME, "readonly");
+        let store = tx.objectStore(STORE_NAME);
+
+        let charReq = store.get("characters");
+        charReq.onsuccess = () => {
+            if (charReq.result) characters = charReq.result;
+
+            let groupReq = store.get("groups");
+            groupReq.onsuccess = () => {
+                if (groupReq.result) groups = groupReq.result;
+
+                // 데이터를 브라우저 창고에서 온전히 꺼낸 뒤 화면을 그립니다.
+                renderMainTab();
+                renderCombinedGalleryList();
+                renderRecentPhotos();
+            };
+        };
+    } catch (err) {
+        console.error("데이터 로드 실패:", err);
+    }
+}
+
+// 앱이 켜지자마자 저장 파일 강제 로드
 window.addEventListener('DOMContentLoaded', () => {
-    loadFromLocalStorage();
-    renderAll();
+    loadFromDB();
 });
